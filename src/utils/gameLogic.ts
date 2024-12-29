@@ -94,9 +94,28 @@ export const computerMove = (gameState: GameState): [number, number] => {
   // If no known match is found, pick two random cards
   const shuffled = [...availableCards].sort(() => Math.random() - 0.5);
   gameState.cards[shuffled[0].index].isComputerSeen = true;
-  gameState.cards[shuffled[1].index].isComputerSeen = true;
-  console.log('Picked two random cards:',[ shuffled[0], shuffled[1]]);
-  return [shuffled[0].index, shuffled[1].index];
+
+  const availableCards2 = gameState.cards
+  .map((card, index) => ({ card, index }))
+  .filter(({ card }) => !card.isMatched && !card.isFlipped);
+  const seenCards2 = availableCards2.filter(({ card }) => card.isComputerSeen);
+  if (seenCards2.length > 0) {
+    console.log('Computer seen cards 2', seenCards2)
+    for (let i = 0; i <= seenCards2.length - 1; i++) {
+      for (let j = i + 1; j <= seenCards2.length - 1; j++) {
+        console.log('Computer trying to match 2',seenCards2[i].card.value, seenCards2[j].card.value)
+        if (seenCards2[i].card.value === seenCards2[j].card.value  && seenCards2[i].index !== seenCards2[j].index) {
+          console.log('Found two cards2 with known match:', [seenCards2[i], seenCards2[j]]);
+          return [seenCards2[j].index, seenCards2[i].index];
+        }
+      }
+    }
+  }
+    gameState.cards[shuffled[1].index].isComputerSeen = true;
+    console.log('Picked two random cards:', [shuffled[0], shuffled[1]]);
+    return [shuffled[0].index, shuffled[1].index];
+  
+
   }
   else {
     const availableCards = gameState.cards
