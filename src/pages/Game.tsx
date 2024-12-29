@@ -3,7 +3,6 @@ import { GameBoard } from '../components/GameBoard';
 import { ScoreBoard } from '../components/ScoreBoard';
 import { Card, GameState } from '../types/game';
 import { createDeck, checkForMatch, computerMove } from '../utils/gameLogic';
-
 function Game({difficulty}: {difficulty: "easy" | "medium" | "hard"}) {
   const [gameState, setGameState] = useState<GameState>({
     cards: createDeck(),
@@ -21,10 +20,11 @@ function Game({difficulty}: {difficulty: "easy" | "medium" | "hard"}) {
   if (gameState.selectedCards.length === 2 || card.isFlipped || card.isMatched) {
     return;
   }
-
+  if(gameState.currentPlayer === 0)console.log('User flipped:', card)
+  
   setGameState(prev => {
     const updatedCards = prev.cards.map(c =>
-      c.id === card.id ? { ...c, isFlipped: true } : c
+      c.id === card.id ? { ...c, isFlipped: true, isComputerSeen:true } : c
     );
 
     return {
@@ -65,7 +65,6 @@ function Game({difficulty}: {difficulty: "easy" | "medium" | "hard"}) {
           gameOver: updatedCards.every(card => card.isMatched)
         }));
       }, 1000);
-
       return () => clearTimeout(timeout);
     }
   }, [gameState.selectedCards]);
@@ -85,7 +84,7 @@ function Game({difficulty}: {difficulty: "easy" | "medium" | "hard"}) {
 
         return () => clearTimeout(timeout2);
       }, 1000);
-
+      
       return () => clearTimeout(timeout1);
     }
   }, [gameState]);
