@@ -3,6 +3,7 @@ export type Card = {
   value: string;
   isFlipped: boolean;
   isMatched: boolean;
+  isComputerSeen?: boolean;
 };
 
 export type Player = {
@@ -17,4 +18,5 @@ export type GameState = {
   currentPlayer: number;
   selectedCards: Card[];
   gameOver: boolean;
+  difficulty:"easy" | "medium" | "hard";
 };

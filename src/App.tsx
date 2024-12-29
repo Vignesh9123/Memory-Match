@@ -1,147 +1,35 @@
-import { useState, useEffect } from 'react';
-import { GameBoard } from './components/GameBoard';
-import { ScoreBoard } from './components/ScoreBoard';
-import { Card, GameState } from './types/game';
-import { createDeck, checkForMatch, computerMove } from './utils/gameLogic';
-
+import { useState } from "react"
+import Game from "./pages/Game"
+import {motion} from "framer-motion"
 function App() {
-  const [gameState, setGameState] = useState<GameState>({
-    cards: createDeck(),
-    players: [
-      { name: 'Player', score: 0 },
-      { name: 'Computer', score: 0, isComputer: true }
-    ],
-    currentPlayer: 0,
-    selectedCards: [],
-    gameOver: false
-  });
-
- const handleCardClick = (card: Card) => {
-  if (gameState.selectedCards.length === 2 || card.isFlipped || card.isMatched) {
-    return;
-  }
-
-  setGameState(prev => {
-    const updatedCards = prev.cards.map(c =>
-      c.id === card.id ? { ...c, isFlipped: true } : c
-    );
-
-    return {
-      ...prev,
-      cards: updatedCards,
-      selectedCards: [...prev.selectedCards, card],
-    };
-  });
-};
-
-
-  useEffect(() => {
-    if (gameState.selectedCards.length === 2) {
-
-      const timeout = setTimeout(() => {
-        const isMatch = checkForMatch(gameState.selectedCards);
-        
-        const updatedCards = gameState.cards.map(card => {
-          const isSelected = gameState.selectedCards.some(c => c.id === card.id);
-          return {
-            ...card,
-            isMatched: isMatch && isSelected ? true : card.isMatched,
-            isFlipped: isMatch && isSelected ? true : !isSelected ? card.isFlipped : false
-          };
-        });
-
-        // Update scores
-        const updatedPlayers = [...gameState.players];
-        if (isMatch) {
-          updatedPlayers[gameState.currentPlayer].score += 1;
-        }
-        setGameState(prev => ({
-          ...prev,
-          cards: updatedCards,
-          players: updatedPlayers as [typeof prev.players[0], typeof prev.players[1]],
-          currentPlayer: isMatch ? prev.currentPlayer : (prev.currentPlayer + 1) % 2,
-          selectedCards: [],
-          gameOver: updatedCards.every(card => card.isMatched)
-        }));
-      }, 1000);
-
-      return () => clearTimeout(timeout);
-    }
-  }, [gameState.selectedCards]);
-
-  useEffect(() => {
-    if (gameState.currentPlayer === 1 && !gameState.gameOver && gameState.selectedCards.length === 0) {
-      const timeout1 = setTimeout(() => {
-        const [firstCardIndex, secondCardIndex] = computerMove(gameState);
-        
-        const firstCard = gameState.cards[firstCardIndex];
-        handleCardClick(firstCard);
-        
-        const timeout2 = setTimeout(() => {
-          const secondCard = gameState.cards[secondCardIndex];
-          handleCardClick(secondCard);
-        }, 500);
-
-        return () => clearTimeout(timeout2);
-      }, 1000);
-
-      return () => clearTimeout(timeout1);
-    }
-  }, [gameState]);
-  
-
+  const [difficulty, setDifficulty] = useState<"easy" | "medium" | "hard" | null>(null)
   return (
-    <div className="min-h-screen bg-gray-100 py-8">
-      <div className="max-w-4xl mx-auto">
-        <h1 className="text-3xl font-bold text-center mb-8 text-indigo-600">
-          Memory Match Game
-        </h1>
+    <>
+   {!difficulty && <div className="w-full h-screen overflow-auto bg-slate-900">
+      <motion.div
+        initial={{opacity:0, filter:"blur(5px)"}}
+        animate={{opacity:1, filter:"blur(0px)"}}
         
-        <ScoreBoard
-          players={gameState.players}
-          currentPlayer={gameState.currentPlayer}
-        />
-
-        <div className="bg-white rounded-lg shadow-xl p-6">
-          <GameBoard
-            cards={gameState.cards}
-            onCardClick={handleCardClick}
-            disabled={gameState.currentPlayer === 1}
-          />
-        </div>
-
-        {gameState.gameOver && (
-          <div className="mt-8 text-center">
-            <h2 className="text-2xl font-bold text-indigo-600">
-              Game Over!
-            </h2>
-            <p className="text-xl mt-2">
-              {gameState.players[0].score > gameState.players[1].score
-                ? 'You win! 🎉'
-                : gameState.players[0].score < gameState.players[1].score
-                ? 'Computer wins! 🤖'
-                : "It's a tie! 🤝"}
-            </p>
-            <button
-              onClick={() => setGameState({
-                cards: createDeck(),
-                players: [
-                  { name: 'Player', score: 0 },
-                  { name: 'Computer', score: 0, isComputer: true }
-                ],
-                currentPlayer: 0,
-                selectedCards: [],
-                gameOver: false
-              })}
-              className="mt-4 px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
-            >
-              Play Again
-            </button>
-          </div>
+        transition={{duration:0.5}}
+        className="text-xl md:text-3xl lg:text-6xl font-bold text-center text-white py-10 animate-pulse"
+      >
+        Welcome to Memory Match with AI
+      </motion.div>
+     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 w-full px-10 h-[80%] gap-6 justify-self-center items-center">
+      {["Easy", "Medium", "Hard"].map((difficulty, index) => 
+      
+        <motion.div onClick={() => setDifficulty(difficulty.toLowerCase() as "easy" | "medium" | "hard")} initial={{opacity:0, y:100, filter:"blur(5px)"}} animate={{opacity:1, y:0, filter:"blur(0px)"}} transition={{duration:0.5, delay:index*0.2}} className={"w-full h-[100px] md:h-[300px] flex justify-center items-center border border-gray-400 rounded-md text-2xl font-bold cursor-pointer duration-150 hover:scale-105"+(index == 1?" bg-yellow-300 hover:bg-yellow-400":index == 2?" bg-red-300 hover:bg-red-400":" bg-green-300 hover:bg-green-400")}>
+          {difficulty}{difficulty == "Hard" && " (Impossible)"}
+        </motion.div>
         )}
-      </div>
-    </div>
-  );
+       
+     </div>
+    </div>}
+    {
+      difficulty && <Game difficulty={difficulty} />
+    }
+    </>
+  )
 }
 
-export default App;
+export default App

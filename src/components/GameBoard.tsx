@@ -10,7 +10,7 @@ interface GameBoardProps {
 
 export const GameBoard: React.FC<GameBoardProps> = ({ cards, onCardClick, disabled }) => {
   return (
-    <div className="grid grid-cols-4 gap-2 p-4">
+    <div className="grid grid-cols-4 gap-2 p-4 justify-items-center">
       {cards.map((card) => (
         <CardComponent
           key={card.id}
