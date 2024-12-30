@@ -38,7 +38,8 @@ export const findKnownMatch = (cards: Card[]): [number, number] | null => {
 
   return null;
 };
-//
+
+//Core Computer moves logic
 export const computerMove = (gameState: GameState): [number, number] => {
   if(gameState.difficulty == "hard"){
   const knownMatch = findKnownMatch(gameState.cards);
@@ -76,7 +77,7 @@ export const computerMove = (gameState: GameState): [number, number] => {
     .map((card, index) => ({ card, index }))
     .filter(({ card }) => !card.isMatched && !card.isFlipped);
 
-  // Try to find a card that the computer has seen before
+  // Try to find two cards with same value that the computer has seen before
   const seenCards = availableCards.filter(({ card }) => card.isComputerSeen);
   if (seenCards.length > 0) {
     console.log('Computer seen cards', seenCards)
@@ -91,10 +92,11 @@ export const computerMove = (gameState: GameState): [number, number] => {
     }
   }
 
-  // If no known match is found, pick two random cards
+  // If no known match is found, pick one random cards
   const shuffled = [...availableCards].sort(() => Math.random() - 0.5);
   gameState.cards[shuffled[0].index].isComputerSeen = true;
 
+  // Check for match with the first picked card and already seen cards
   const availableCards2 = gameState.cards
   .map((card, index) => ({ card, index }))
   .filter(({ card }) => !card.isMatched && !card.isFlipped);
@@ -111,11 +113,10 @@ export const computerMove = (gameState: GameState): [number, number] => {
       }
     }
   }
+  // If no known match is found, pick two random cards
     gameState.cards[shuffled[1].index].isComputerSeen = true;
     console.log('Picked two random cards:', [shuffled[0], shuffled[1]]);
     return [shuffled[0].index, shuffled[1].index];
-  
-
   }
   else {
     const availableCards = gameState.cards
